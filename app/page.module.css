@@ -1,0 +1,49 @@
+.page {
+  background: url("/image.webp") center center / cover no-repeat;
+  min-height: 100dvh;
+  display: flex;
+}
+.card {
+  background: rgba(0, 0, 0, 0.4); /* translucent white */
+  border-radius: 20px;
+  padding: 2rem;
+  backdrop-filter: blur(15px); /* glass blur */
+  -webkit-backdrop-filter: blur(5px); /* for Safari */
+  border: 1px solid rgba(0, 0, 0, 0.4); /* subtle border */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* soft shadow */
+  color: #fff;
+}
+.input{
+  outline: none;
+}
+.input:invalid:not(:placeholder-shown) {
+  border: 3px solid hsl(0, 100%, 50%);
+  background-image: url("/delete.webp");
+}
+.input:valid:not(:placeholder-shown) {
+  border: 3px solid hsl(120, 100%, 25%);
+  background-image: url("/accept.webp");
+}
+.input:valid:not(:placeholder-shown),
+.input:invalid:not(:placeholder-shown) {
+  background-repeat: no-repeat;
+  background-position: calc(100% - 10px) center;
+}
+.button:disabled {
+  opacity: .7;
+  cursor: not-allowed;
+}
+.button:nth-child(1) {
+  background-color: hsl(290, 100%, 25%)
+}
+.button:nth-child(2) {
+  background-color: hsl(241, 98%, 68%)
+}
+.button:nth-child(1):hover {
+  background-color: hsl(290, 100%, 27%)
+}
+.button:nth-child(2):hover {
+  background-color: hsl(241, 98%, 69%)
+}
+
+
