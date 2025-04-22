@@ -6,7 +6,7 @@ import styles from "./page.module.css";
 import { useState } from "react";
 
 // stripe
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe } from '@stripe/stripe-js';
 
 // Next
 import Image from "next/image";
@@ -64,71 +64,50 @@ export default function Home() {
   };
 
   const ChargilyPay = async (donationId) => {
-    const url = process.env.NEXT_PUBLIC_CHARGILY_CHECKOUT_URL;
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.NEXT_PUBLIC_CHARGILY_SECRET_KEY}`,
-    };
-    const payload = {
-      amount,
-      currency: currency.toLowerCase(),
-      success_url: `${process.env.NEXT_PUBLIC_URL}/`,
-      failure_url: `${process.env.NEXT_PUBLIC_URL}/`,
-      webhook_endpoint: `${process.env.NEXT_PUBLIC_WEBHOOK_ENDPOINT}/webhook/chargily`,
-      metadata: {
-        donationId,
-      },
-    };
     try {
-      const res = await fetch(url, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/extra/chargily`, {
         method: "POST",
-        headers,
-        body: JSON.stringify(payload),
-      });
-      setDonationMethod(null);
-      const data = await res.json();
-      if (!data?.checkout_url) {
-        throw new Error("Failed to create checkout session");
+        headers: {'Content-Type': "application/json"},
+        body: JSON.stringify({amount, currency: currency.toLowerCase(), donationId})
+      })
+      const data = await res.json()
+      
+      if(!data?.checkoutUrl){
+        throw new Error("Couldn't get checkout url")
       }
-      const checkoutUrl = data.checkout_url;
-      router.push(checkoutUrl);
+      router.push(data.checkoutUrl);
+      setDonationMethod(null);
     } catch (err) {
       console.error(err);
     }
   };
 
   const StripePay = async (donationId) => {
-    const stripePromise = loadStripe(
-      process.env.NEXT_PUBLIC_STRIPE_PUBLISH_KEY
-    );
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/stripe-checkout-session`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/extra/stripe`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            items: [{ amount: amount*100, currency }],
-            donationId,
-          }),
+          body: JSON.stringify({amount, currency, donationId}),
         }
       );
-      setDonationMethod(null);
-      const data = await res.json();
-      
-      if (!data?.sessionId) {
-        throw new Error("Failed to create checkout session");
+      const data = await res.json()
+      if(!data?.sessionId){
+        throw new Error("payment operation failed")
       }
+      const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISH_KEY);
       const stripe = await stripePromise;
       stripe.redirectToCheckout({ sessionId: data.sessionId });
+      setDonationMethod(null);
     } catch (err) {
       console.error(err);
     }
   };
-  
-  const convertedAmount = currency == "DZD" ? 137.67 : 0.5
+
+  const convertedAmount = currency == "DZD" ? 140 : 0.5;
   const DonationMethods = [
     {
       name: "Chargily",
@@ -143,7 +122,6 @@ export default function Home() {
       fnc: StripePay,
     },
   ];
-
 
   return (
     <main className={styles.page}>
@@ -217,12 +195,22 @@ export default function Home() {
                 required
               />
             </div>
-            <p className="text-start mt-2" style={{fontSize: ".85rem", opacity: ".8"}}>
+            <p
+              className="text-start mt-2"
+              style={{ fontSize: ".85rem", opacity: ".8" }}
+            >
               ⚠️ Chargily only accepts payments in <strong>DZD</strong> and the
               amount must be greater than <strong>75 DZD</strong>.
             </p>
-            <p className="text-start mt-2" style={{fontSize: ".85rem", opacity: ".8"}}>
-              ⚠️ Stripe only accepts payments greater than <strong>{convertedAmount} {currency}</strong>.
+            <p
+              className="text-start mt-2"
+              style={{ fontSize: ".85rem", opacity: ".8" }}
+            >
+              ⚠️ Stripe only accepts payments greater than{" "}
+              <strong>
+                {convertedAmount} {currency}
+              </strong>
+              .
             </p>
             <h4 className="my-4">Select a payment method :</h4>
             <div className="d-flex flex-md-row flex-column justify-content-between">
