@@ -130,7 +130,7 @@ export default function Home() {
       >
         <div className="container text-center">
           <h1>Support Gaza Relief Efforts</h1>
-          <p className="py-3" style={{ opacity: ".8" }}>
+          <p className="py-1" style={{ opacity: ".8" }}>
             Your donation helps deliver vital aid, medical supplies, and relief
             to families affected by the crisis in Gaza. Every contribution
             counts.
